@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
+import { Container, Nav, Navbar } from 'react-bootstrap';
 import NavLink from '../NavLink';
 
 export default function Header() {
-  const [token, setToken] = useState(true);
   return (
-    <ul>
-      <NavLink to='/'>Home</NavLink>
-      <NavLink to='/categories'>Categories</NavLink>
-      <NavLink to='/about'>About</NavLink>
-      {token ? <NavLink to='/logout'>Logout</NavLink> : <>login</>}
-    </ul>
+    <Navbar bg='dark' variant='dark'>
+      <Container>
+        <Navbar.Brand href='#home'>Logo</Navbar.Brand>
+        <Nav className='me-auto'>
+          <NavLink to='/'>Home</NavLink>
+          <NavLink to='/categories'>Categories</NavLink>
+        </Nav>
+      </Container>
+    </Navbar>
   );
 }
