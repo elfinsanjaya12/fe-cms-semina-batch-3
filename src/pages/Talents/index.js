@@ -1,29 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Spinner, Table } from 'react-bootstrap';
+import { Container, Table, Image, Spinner } from 'react-bootstrap';
 import SBreadCrumb from '../../components/BreadCrumb';
 import SButton from '../../components/Button';
 import { useNavigate } from 'react-router-dom';
-import SAlert from '../../components/Alert';
-import Swal from 'sweetalert2';
+import SearchInput from '../../components/SearchInput';
 import { deleteData, getData } from '../../utils/fetch';
+import { config } from '../../configs';
 import debounce from 'debounce-promise';
-let debouncedFetchCategories = debounce(getData, 1000);
+import Swal from 'sweetalert2';
+import SAlert from '../../components/Alert';
+let debouncedFetchTalents = debounce(getData, 1000);
 
-export default function CategoriesPage() {
+export default function TalentsPage() {
   const [status, setStatus] = useState('idle');
-  const navigate = useNavigate();
   const [data, setData] = useState([]);
+  const [keyword, setKeyword] = useState('');
+  const navigate = useNavigate();
   const [alert, setAlert] = useState({
     status: false,
     message: '',
   });
 
-  const getAPICategories = async () => {
-    setStatus('progress');
+  const handleKeyword = (e) => {
+    setKeyword(e.target.value);
+  };
+
+  const getAPITalents = async () => {
     setTimeout(() => {
       setAlert({ status: false, message: '' });
     }, 5000);
-    const res = await debouncedFetchCategories('/v1/cms/categories');
+    setStatus('progress');
+    const params = {
+      keyword,
+    };
+    const res = await debouncedFetchTalents('/v1/cms/talents', params);
     if (res.status === 200) {
       setData(res.data.data);
       setStatus('success');
@@ -31,8 +41,8 @@ export default function CategoriesPage() {
   };
 
   useEffect(() => {
-    getAPICategories();
-  }, []);
+    getAPITalents();
+  }, [keyword]);
 
   const handleDelete = async (id) => {
     Swal.fire({
@@ -46,12 +56,12 @@ export default function CategoriesPage() {
       cancelButtonText: 'Batal',
     }).then(async (result) => {
       if (result.isConfirmed) {
-        const res = await deleteData(`/v1/cms/categories/${id}`);
+        const res = await deleteData(`/v1/cms/talents/${id}`);
         if (res.status === 200) {
-          getAPICategories();
+          getAPITalents();
           setAlert({
             status: true,
-            message: `berhasil hapus kategori ${res.data.data.name}`,
+            message: `berhasil hapus talents ${res.data.data.name}`,
           });
         }
       }
@@ -61,12 +71,18 @@ export default function CategoriesPage() {
   return (
     <Container>
       {alert.status && <SAlert variant='success' message={alert.message} />}
-      <SBreadCrumb textSecound='Categories' />
-      <SButton action={() => navigate('/categories/create')}>Tambah</SButton>
+      <SBreadCrumb textSecound='Talents' />
+      <SButton className='mb-3' action={() => navigate('/talents/create')}>
+        Tambah
+      </SButton>
+      <SearchInput handleChange={handleKeyword} query={keyword} />
+
       <Table striped bordered hover className='my-3'>
         <thead>
           <tr>
             <th>Name</th>
+            <th>Role</th>
+            <th>Avatar</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -83,11 +99,20 @@ export default function CategoriesPage() {
             data.map((data, index) => (
               <tr key={index}>
                 <td>{data.name}</td>
+                <td>{data.role}</td>
+                <td>
+                  <Image
+                    height={40}
+                    width={40}
+                    roundedCircle
+                    src={`${config.api_image}/${data.image.name}`}
+                  />
+                </td>
                 <td>
                   <SButton
                     size='sm'
                     variant='success'
-                    action={() => navigate(`/categories/edit/${data._id}`)}
+                    action={() => navigate(`/talents/edit/${data._id}`)}
                   >
                     Edit
                   </SButton>
@@ -104,7 +129,7 @@ export default function CategoriesPage() {
             ))
           ) : (
             <tr>
-              <td colSpan={2} style={{ textAlign: 'center' }}>
+              <td colSpan={4} style={{ textAlign: 'center' }}>
                 Tidak Ditemukan Data
               </td>
             </tr>

@@ -12,9 +12,13 @@ export async function getData(url, params) {
   }
 }
 
-export async function postData(url, payload) {
+export async function postData(url, payload, formData) {
   try {
-    return await axios.post(`${config.api_host_dev}${url}`, payload);
+    return await axios.post(`${config.api_host_dev}${url}`, payload, {
+      headers: {
+        'Content-Type': formData ? 'multipart/form-data' : 'application/json',
+      },
+    });
   } catch (err) {
     return handleError(err);
   }
