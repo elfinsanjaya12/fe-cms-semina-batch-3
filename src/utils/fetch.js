@@ -4,8 +4,15 @@ import { config } from '../configs';
 
 export async function getData(url, params) {
   try {
+    const { token } = localStorage.getItem('auth')
+      ? JSON.parse(localStorage.getItem('auth'))
+      : {};
+
     return await axios.get(`${config.api_host_dev}${url}`, {
       params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
   } catch (err) {
     return handleError(err);

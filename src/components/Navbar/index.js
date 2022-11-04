@@ -11,6 +11,7 @@ export default function Header() {
           <NavLink to='/'>Home</NavLink>
           <NavLink to='/categories'>Categories</NavLink>
           <NavLink to='/talents'>Talents</NavLink>
+          <NavLink to='/events'>Events</NavLink>
         </Nav>
       </Container>
     </Navbar>
