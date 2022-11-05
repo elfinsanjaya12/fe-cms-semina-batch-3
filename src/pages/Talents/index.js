@@ -4,45 +4,22 @@ import SBreadCrumb from '../../components/BreadCrumb';
 import SButton from '../../components/Button';
 import { useNavigate } from 'react-router-dom';
 import SearchInput from '../../components/SearchInput';
-import { deleteData, getData } from '../../utils/fetch';
-import { config } from '../../configs';
-import debounce from 'debounce-promise';
+import { deleteData } from '../../utils/fetch';
 import Swal from 'sweetalert2';
 import SAlert from '../../components/Alert';
-let debouncedFetchTalents = debounce(getData, 1000);
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTalents, setKeyword } from '../../redux/talents/actions';
+import { setNotif } from '../../redux/notif/actions';
+import { config } from '../../configs';
 
 export default function TalentsPage() {
-  const [status, setStatus] = useState('idle');
-  const [data, setData] = useState([]);
-  const [keyword, setKeyword] = useState('');
+  const dispatch = useDispatch();
+  const { talents } = useSelector((state) => state);
   const navigate = useNavigate();
-  const [alert, setAlert] = useState({
-    status: false,
-    message: '',
-  });
-
-  const handleKeyword = (e) => {
-    setKeyword(e.target.value);
-  };
-
-  const getAPITalents = async () => {
-    setTimeout(() => {
-      setAlert({ status: false, message: '' });
-    }, 5000);
-    setStatus('progress');
-    const params = {
-      keyword,
-    };
-    const res = await debouncedFetchTalents('/v1/cms/talents', params);
-    if (res.status === 200) {
-      setData(res.data.data);
-      setStatus('success');
-    }
-  };
 
   useEffect(() => {
-    getAPITalents();
-  }, [keyword]);
+    dispatch(fetchTalents());
+  }, [dispatch, talents.keyword]);
 
   const handleDelete = async (id) => {
     Swal.fire({
@@ -58,11 +35,14 @@ export default function TalentsPage() {
       if (result.isConfirmed) {
         const res = await deleteData(`/v1/cms/talents/${id}`);
         if (res.status === 200) {
-          getAPITalents();
-          setAlert({
-            status: true,
-            message: `berhasil hapus talents ${res.data.data.name}`,
-          });
+          dispatch(fetchTalents());
+          dispatch(
+            setNotif(
+              true,
+              'success',
+              `berhasil hapus talents ${res.data.data.name}`
+            )
+          );
         }
       }
     });
@@ -75,7 +55,10 @@ export default function TalentsPage() {
       <SButton className='mb-3' action={() => navigate('/talents/create')}>
         Tambah
       </SButton>
-      <SearchInput handleChange={handleKeyword} query={keyword} />
+      <SearchInput
+        handleChange={(e) => dispatch(setKeyword(e.target.value))}
+        query={talents.keyword}
+      />
 
       <Table striped bordered hover className='my-3'>
         <thead>
@@ -87,7 +70,7 @@ export default function TalentsPage() {
           </tr>
         </thead>
         <tbody>
-          {status === 'progress' ? (
+          {talents.status === 'process' ? (
             <tr>
               <td colSpan={4} style={{ textAlign: 'center' }}>
                 <div className='flex items-center justify-center'>
@@ -95,8 +78,8 @@ export default function TalentsPage() {
                 </div>
               </td>
             </tr>
-          ) : data.length > 0 ? (
-            data.map((data, index) => (
+          ) : talents.data.length > 0 ? (
+            talents.data.map((data, index) => (
               <tr key={index}>
                 <td>{data.name}</td>
                 <td>{data.role}</td>

@@ -1,38 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Container, Spinner, Table } from 'react-bootstrap';
 import SBreadCrumb from '../../components/BreadCrumb';
 import SButton from '../../components/Button';
 import { useNavigate } from 'react-router-dom';
 import SAlert from '../../components/Alert';
 import Swal from 'sweetalert2';
-import { deleteData, getData } from '../../utils/fetch';
-import debounce from 'debounce-promise';
-let debouncedFetchCategories = debounce(getData, 1000);
+import { deleteData } from '../../utils/fetch';
+import { fetchCategories } from '../../redux/categories/actions';
+import { setNotif } from '../../redux/notif/actions';
+import { useDispatch, useSelector } from 'react-redux';
 
 export default function CategoriesPage() {
-  const [status, setStatus] = useState('idle');
-  const navigate = useNavigate();
-  const [data, setData] = useState([]);
-  const [alert, setAlert] = useState({
-    status: false,
-    message: '',
-  });
+  const dispatch = useDispatch();
+  const { categories, notif } = useSelector((state) => state);
 
-  const getAPICategories = async () => {
-    setStatus('progress');
-    setTimeout(() => {
-      setAlert({ status: false, message: '' });
-    }, 5000);
-    const res = await debouncedFetchCategories('/v1/cms/categories');
-    if (res.status === 200) {
-      setData(res.data.data);
-      setStatus('success');
-    }
-  };
+  const navigate = useNavigate();
 
   useEffect(() => {
-    getAPICategories();
-  }, []);
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   const handleDelete = async (id) => {
     Swal.fire({
@@ -48,11 +34,14 @@ export default function CategoriesPage() {
       if (result.isConfirmed) {
         const res = await deleteData(`/v1/cms/categories/${id}`);
         if (res.status === 200) {
-          getAPICategories();
-          setAlert({
-            status: true,
-            message: `berhasil hapus kategori ${res.data.data.name}`,
-          });
+          dispatch(fetchCategories());
+          dispatch(
+            setNotif(
+              true,
+              'success',
+              `berhasil hapus kategori ${res.data.data.name}`
+            )
+          );
         }
       }
     });
@@ -60,7 +49,9 @@ export default function CategoriesPage() {
 
   return (
     <Container>
-      {alert.status && <SAlert variant='success' message={alert.message} />}
+      {notif.status && (
+        <SAlert variant={notif.variant} message={notif.message} />
+      )}
       <SBreadCrumb textSecound='Categories' />
       <SButton action={() => navigate('/categories/create')}>Tambah</SButton>
       <Table striped bordered hover className='my-3'>
@@ -71,7 +62,7 @@ export default function CategoriesPage() {
           </tr>
         </thead>
         <tbody>
-          {status === 'progress' ? (
+          {categories.status === 'process' ? (
             <tr>
               <td colSpan={4} style={{ textAlign: 'center' }}>
                 <div className='flex items-center justify-center'>
@@ -79,8 +70,8 @@ export default function CategoriesPage() {
                 </div>
               </td>
             </tr>
-          ) : data.length > 0 ? (
-            data.map((data, index) => (
+          ) : categories.data.length > 0 ? (
+            categories.data.map((data, index) => (
               <tr key={index}>
                 <td>{data.name}</td>
                 <td>
