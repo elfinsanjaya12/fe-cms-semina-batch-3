@@ -5,6 +5,7 @@ import authReducer from './auth/reducer';
 import talentsReducer from './talents/reducer';
 import listsReducer from './lists/reducer';
 import eventsReducer from './events/reducer';
+import paymentsReducer from './payments/reducer';
 
 const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ const store = configureStore({
     talents: talentsReducer,
     lists: listsReducer,
     events: eventsReducer,
+    payments: paymentsReducer,
   },
 });
 

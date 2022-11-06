@@ -16,6 +16,7 @@ export default function Header() {
           <NavLink to='/categories'>Categories</NavLink>
           <NavLink to='/talents'>Talents</NavLink>
           <NavLink to='/events'>Events</NavLink>
+          <NavLink to='/payments'>Payments</NavLink>
         </Nav>
         <Nav className='justify-content-end'>
           <Nav.Link onClick={() => handleLogout()}>Logout</Nav.Link>
