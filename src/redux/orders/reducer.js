@@ -16,7 +16,7 @@ const statuslist = {
 const initialState = {
   data: [],
   page: 1,
-  limit: 1,
+  limit: 10,
   pages: 1,
   date: {
     startDate: new Date(),

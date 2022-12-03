@@ -49,13 +49,11 @@ export const fetchOrders = () => {
         ),
       };
 
-      console.log(params);
-
       let res = await debouncedFetchOrders('/v1/cms/orders', params);
 
       dispatch(
         successFetchingOrders({
-          orders: res.data.data.orders,
+          orders: res.data.data.order,
           pages: res.data.data.pages,
         })
       );
